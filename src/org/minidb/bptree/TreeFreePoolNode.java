@@ -23,8 +23,8 @@ class TreeFreePoolNode extends TreeNode {
     }
 
     /**
-     * @param r     an *already* open pointer which points to our B+ Tree file
-     * @param conf  B+ Tree configuration
+     * @param r    an *already* open pointer which points to our B+ Tree file
+     * @param conf B+ Tree configuration
      * @throws IOException is thrown when an I/O operation fails
      */
     @Override
@@ -36,7 +36,8 @@ class TreeFreePoolNode extends TreeNode {
         r.seek(getPageIndex());
 
         byte[] buffer = new byte[conf.pageSize];
-        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);bbuffer.order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);
+        bbuffer.order(ByteOrder.BIG_ENDIAN);
 
         // write the node type
         bbuffer.putShort(getPageType());

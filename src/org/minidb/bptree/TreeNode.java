@@ -1,6 +1,7 @@
 package org.minidb.bptree;
 
 import org.minidb.exception.MiniDBException;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
@@ -10,10 +11,8 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedList;
 
 /**
- *
  * Class that describes all the common properties that
  * each of the node types have.
- *
  */
 @SuppressWarnings("unused")
 abstract public class TreeNode {
@@ -27,7 +26,8 @@ abstract public class TreeNode {
     /**
      * Constructor which takes into the node type as well as the
      * page index
-     * @param nodeType the actual node type
+     *
+     * @param nodeType  the actual node type
      * @param pageIndex the page index in the file
      */
     TreeNode(TreeNodeType nodeType, long pageIndex) {
@@ -40,18 +40,20 @@ abstract public class TreeNode {
 
     /**
      * Check if the node is full (and needs splitting)
-     * @param conf configuration to deduce which degree to use
      *
+     * @param conf configuration to deduce which degree to use
      * @return true is the node is full false if it's not.
      */
     boolean isFull(BPlusConfiguration conf) {
-        if(isLeaf()) {
-            return(isOverflow() ?
+        if (isLeaf()) {
+            return (isOverflow() ?
                     (conf.getMaxOverflowNodeCapacity() == currentCapacity) :
-                    (conf.getMaxLeafNodeCapacity() == currentCapacity));}
-        else
-            // internal
-            {return(conf.getMaxInternalNodeCapacity() == currentCapacity);}
+                    (conf.getMaxLeafNodeCapacity() == currentCapacity));
+        } else
+        // internal
+        {
+            return (conf.getMaxInternalNodeCapacity() == currentCapacity);
+        }
     }
 
     /**
@@ -62,15 +64,17 @@ abstract public class TreeNode {
      */
     boolean isTimeToMerge(BPlusConfiguration conf) {
         // for roots (internal or leaf) return true only when empty
-        if(isRoot())
-            {return(getCurrentCapacity() <= 1);}
-        else if(isLeaf()) {
+        if (isRoot()) {
+            return (getCurrentCapacity() <= 1);
+        } else if (isLeaf()) {
             // for overflow pages return true only if empty
-            if (isOverflow())
-                {return (isEmpty());}
+            if (isOverflow()) {
+                return (isEmpty());
+            }
             // otherwise return based on degree
-            else
-                {return (conf.getMinLeafNodeCapacity() >= currentCapacity);}
+            else {
+                return (conf.getMinLeafNodeCapacity() >= currentCapacity);
+            }
         } else // internal
         {
             return (conf.getMinInternalNodeCapacity() >= currentCapacity);
@@ -124,14 +128,14 @@ abstract public class TreeNode {
     private void validateNodeCapacityLimits(BPlusConfiguration conf)
             throws MiniDBException {
 
-        if(isRoot()) {
-            if(currentCapacity < 0) {
+        if (isRoot()) {
+            if (currentCapacity < 0) {
                 // "Cannot have less than zero elements"
                 throw new MiniDBException(MiniDBException.InvalidBPTreeState);
-            } else if(isLeaf() && currentCapacity > conf.getMaxLeafNodeCapacity()) {
+            } else if (isLeaf() && currentCapacity > conf.getMaxLeafNodeCapacity()) {
                 // "Exceeded leaf node allowed capacity at root"
                 throw new MiniDBException(MiniDBException.InvalidBPTreeState);
-            } else if(isInternalNode() && currentCapacity > conf.getMaxInternalNodeCapacity()) {
+            } else if (isInternalNode() && currentCapacity > conf.getMaxInternalNodeCapacity()) {
                 // "Exceeded internal node allowed capacity at root"
                 throw new MiniDBException(MiniDBException.InvalidBPTreeState);
             }
@@ -145,38 +149,33 @@ abstract public class TreeNode {
                     throw new MiniDBException(MiniDBException.InvalidBPTreeState);
                 }
             }
-            if(isOverflow()) {
-                if(beingDeleted && currentCapacity < 0) {
+            if (isOverflow()) {
+                if (beingDeleted && currentCapacity < 0) {
                     // "Cannot have less than 0 elements in a overflow node when deleting it"
                     throw new MiniDBException(MiniDBException.InvalidBPTreeState);
-                }
-                else if(currentCapacity > conf.getMaxOverflowNodeCapacity()) {
+                } else if (currentCapacity > conf.getMaxOverflowNodeCapacity()) {
                     // "Exceeded overflow node allowed capacity (node)"
                     throw new MiniDBException(MiniDBException.InvalidBPTreeState);
                 }
-            }
-            else if(isLeaf()) {
-                if(beingDeleted && currentCapacity < 0) {
+            } else if (isLeaf()) {
+                if (beingDeleted && currentCapacity < 0) {
                     // "Cannot have less than 0 elements in a leaf node when deleting it"
                     throw new MiniDBException(MiniDBException.InvalidBPTreeState);
-                } else if(!beingDeleted && currentCapacity < conf.getMinLeafNodeCapacity()) {
+                } else if (!beingDeleted && currentCapacity < conf.getMinLeafNodeCapacity()) {
                     // "Cannot have less than " + conf.getMinLeafNodeCapacity() + " elements in a leaf node"
                     throw new MiniDBException(MiniDBException.InvalidBPTreeState);
-                }
-                else if(currentCapacity > conf.getMaxLeafNodeCapacity()) {
+                } else if (currentCapacity > conf.getMaxLeafNodeCapacity()) {
                     // "Exceeded leaf node allowed capacity (node)"
                     throw new MiniDBException(MiniDBException.InvalidBPTreeState);
                 }
-            } else if(isInternalNode()) {
-                if(beingDeleted && currentCapacity < 0) {
+            } else if (isInternalNode()) {
+                if (beingDeleted && currentCapacity < 0) {
                     // "Cannot have less than 0 elements in an internal node"
                     throw new MiniDBException(MiniDBException.InvalidBPTreeState);
-                }
-                else if(!beingDeleted && currentCapacity < conf.getMinInternalNodeCapacity()) {
+                } else if (!beingDeleted && currentCapacity < conf.getMinInternalNodeCapacity()) {
                     // "Cannot have less than " + conf.getMinInternalNodeCapacity() + " elements in an internal node"
                     throw new MiniDBException(MiniDBException.InvalidBPTreeState);
-                }
-                else if(currentCapacity > conf.getMaxInternalNodeCapacity()) {
+                } else if (currentCapacity > conf.getMaxInternalNodeCapacity()) {
                     // "Exceeded internal node allowed capacity (node)"
                     throw new MiniDBException(MiniDBException.InvalidBPTreeState);
                 }
@@ -197,8 +196,9 @@ abstract public class TreeNode {
      *
      * @return true if it is empty false if it's not.
      */
-    boolean isEmpty()
-        {return(currentCapacity == 0);}
+    boolean isEmpty() {
+        return (currentCapacity == 0);
+    }
 
     /**
      * Check if the node in question is an overflow page
@@ -215,7 +215,7 @@ abstract public class TreeNode {
      * @return true if the node is a leaf, false if it's not.
      */
     boolean isLeaf() {
-        return(nodeType == TreeNodeType.TREE_LEAF ||
+        return (nodeType == TreeNodeType.TREE_LEAF ||
                 nodeType == TreeNodeType.TREE_LEAF_OVERFLOW ||
                 nodeType == TreeNodeType.TREE_ROOT_LEAF);
     }
@@ -226,7 +226,7 @@ abstract public class TreeNode {
      * @return true if it is a tree root, false if it's not.
      */
     boolean isRoot() {
-        return(nodeType == TreeNodeType.TREE_ROOT_INTERNAL ||
+        return (nodeType == TreeNodeType.TREE_ROOT_INTERNAL ||
                 nodeType == TreeNodeType.TREE_ROOT_LEAF);
     }
 
@@ -236,7 +236,7 @@ abstract public class TreeNode {
      * @return true if the node is an internal node, false if it's not.
      */
     boolean isInternalNode() {
-        return(nodeType == TreeNodeType.TREE_INTERNAL_NODE ||
+        return (nodeType == TreeNodeType.TREE_INTERNAL_NODE ||
                 nodeType == TreeNodeType.TREE_ROOT_INTERNAL);
     }
 
@@ -282,94 +282,106 @@ abstract public class TreeNode {
 
     /**
      * Get the specific key at position indicated by <code>index</code>
+     *
      * @param index the position to get the key
      * @return the key at position
      */
-    ArrayList<Object> getKeyAt(int index)
-        {return(keyArray.get(index));}
+    ArrayList<Object> getKeyAt(int index) {
+        return (keyArray.get(index));
+    }
 
     /**
      * Return the page index
      *
      * @return current page index
      */
-    long getPageIndex()
-        {return pageIndex;}
+    long getPageIndex() {
+        return pageIndex;
+    }
 
     /**
      * Update the page index
      *
      * @param pageIndex new page index
      */
-    void setPageIndex(long pageIndex)
-        {this.pageIndex = pageIndex;}
+    void setPageIndex(long pageIndex) {
+        this.pageIndex = pageIndex;
+    }
 
     /**
      * Set the key in the array at specific position
      *
      * @param index index to set the key
-     * @param key key to set in position
+     * @param key   key to set in position
      */
-    void setKeyArrayAt(int index, ArrayList<Object> key)
-        {keyArray.set(index, key);}
+    void setKeyArrayAt(int index, ArrayList<Object> key) {
+        keyArray.set(index, key);
+    }
 
     /**
      * Add key at index while shifting entries
      * pointed by index and after by one.
      *
      * @param index index to shift keys and add
-     * @param key key to add in position
+     * @param key   key to add in position
      */
-    void addToKeyArrayAt(int index, ArrayList<Object> key)
-        {keyArray.add(index, key);}
+    void addToKeyArrayAt(int index, ArrayList<Object> key) {
+        keyArray.add(index, key);
+    }
 
     /**
      * Push a key to head of the array
      *
      * @param key key to push
      */
-    void pushToKeyArray(ArrayList<Object> key)
-        {keyArray.push(key);}
+    void pushToKeyArray(ArrayList<Object> key) {
+        keyArray.push(key);
+    }
 
     /**
      * Add a key to the last place of the array
      *
      * @param key key to add
      */
-    void addLastToKeyArray(ArrayList<Object> key)
-        {keyArray.addLast(key);}
+    void addLastToKeyArray(ArrayList<Object> key) {
+        keyArray.addLast(key);
+    }
 
     /**
      * Get last element
      *
      * @return return the last key
      */
-    ArrayList<Object> getLastKey()
-        {return keyArray.getLast();}
+    ArrayList<Object> getLastKey() {
+        return keyArray.getLast();
+    }
 
     /**
      * Get first key
      *
      * @return return the first key value
      */
-    ArrayList<Object> getFirstKey()
-        {return keyArray.getFirst();}
+    ArrayList<Object> getFirstKey() {
+        return keyArray.getFirst();
+    }
 
     /**
      * Pop the key at the head of the array
      *
      * @return key that is in the head of the array
      */
-    ArrayList<Object> popKey()
-        {return keyArray.pop();}
+    ArrayList<Object> popKey() {
+        return keyArray.pop();
+    }
 
     /**
      * Remove and pop the last key of the array
      *
      * @return key that is in the last place of the array
      */
-    ArrayList<Object> removeLastKey()
-        {return keyArray.removeLast();}
+    ArrayList<Object> removeLastKey() {
+        return keyArray.removeLast();
+    }
 
     /**
      * Remove and pop the key at specific position
@@ -377,8 +389,9 @@ abstract public class TreeNode {
      * @param index index that points where to remvoe the key
      * @return removed key
      */
-    ArrayList<Object> removeKeyAt(int index)
-        {return(keyArray.remove(index));}
+    ArrayList<Object> removeKeyAt(int index) {
+        return (keyArray.remove(index));
+    }
 
     /**
      * Get the page type that maps the enumeration to numbers that are
@@ -389,21 +402,31 @@ abstract public class TreeNode {
      */
     short getPageType()
             throws InvalidPropertiesFormatException {
-        switch(getNodeType()) {
+        switch (getNodeType()) {
             case TREE_LEAF:             // LEAF
-                {return(1);}
+            {
+                return (1);
+            }
 
             case TREE_INTERNAL_NODE:    // INTERNAL NODE
-                {return(2);}
+            {
+                return (2);
+            }
 
             case TREE_ROOT_INTERNAL:    // INTERNAL NODE /w ROOT
-                {return(3);}
+            {
+                return (3);
+            }
 
             case TREE_ROOT_LEAF:        // LEAF NODE /w ROOT
-                {return(4);}
+            {
+                return (4);
+            }
 
             case TREE_LEAF_OVERFLOW:    // LEAF OVERFLOW NODE
-                {return(5);}
+            {
+                return (5);
+            }
 
             case TREE_FREE_POOL:  // TREE FREE POOL
             {
@@ -420,10 +443,10 @@ abstract public class TreeNode {
     /**
      * Abstract method that all classes must implement that writes
      * each node type to a page slot.
-     *
+     * <p>
      * More details in each implementation.
      *
-     * @param r an *already* open pointer which points to our B+ Tree file
+     * @param r    an *already* open pointer which points to our B+ Tree file
      * @param conf B+ Tree configuration
      * @throws IOException is thrown when an I/O operation fails.
      */

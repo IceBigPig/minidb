@@ -28,9 +28,7 @@ public class MainDataFile {
     private long totalPages; // number of pages in the file, can be counted from file length
     public BPlusTree rowID2position;
 
-    public MainDataFile(MainDataConfiguration conf, String mode,
-                     String filePath, BPlusTree rowID2position)
-            throws IOException, MiniDBException {
+    public MainDataFile(MainDataConfiguration conf, String mode, String filePath, BPlusTree rowID2position) throws IOException, MiniDBException {
         this.conf = conf;
         this.elementCount = 0L;
         this.totalPages = 1L;
@@ -40,7 +38,7 @@ public class MainDataFile {
         File f = new File(filePath);
         String stmode = mode.substring(0, 2);
         file = new RandomAccessFile(filePath, stmode);
-        if(f.exists() && !mode.contains("+")) {
+        if (f.exists() && !mode.contains("+")) {
             file.seek(0);
             totalPages = file.length() / conf.pageSize;
             elementCount = file.readLong();
@@ -51,20 +49,19 @@ public class MainDataFile {
                 freeSlots.add(pindex);
                 file.seek(pindex);
                 file.read(buffer, 0, buffer.length);
-                ByteBuffer bbuffer = ByteBuffer.wrap(buffer);bbuffer.order(ByteOrder.BIG_ENDIAN);
+                ByteBuffer bbuffer = ByteBuffer.wrap(buffer);
+                bbuffer.order(ByteOrder.BIG_ENDIAN);
                 pindex = bbuffer.getLong();
                 for (int i = 0; i < conf.nValidPointerInFreePage; i++) {
                     long index = bbuffer.getLong();
-                    if(index != -1L)
-                    {
+                    if (index != -1L) {
                         freeSlots.add(index);
-                    }else {
+                    } else {
                         break;
                     }
                 }
             }
-        }
-        else {
+        } else {
             file.setLength(conf.pageSize); // initial tree have 2 pages. head page and root page
             file.seek(0);
             file.writeLong(elementCount);
@@ -74,14 +71,12 @@ public class MainDataFile {
 
     private long getFirstAvailablePageIndex() throws IOException {
         // check if we have unused pages
-        if(freeSlots.size() == 0)
-        {// file length == conf.pageSize * totalPages, allocate new pages
+        if (freeSlots.size() == 0) {// file length == conf.pageSize * totalPages, allocate new pages
             long ALLOCATE_NEW_PAGES = 10L;
             long tmp = totalPages;
             totalPages += ALLOCATE_NEW_PAGES;
             file.setLength(conf.pageSize * totalPages);
-            for (long i = tmp; i < tmp + ALLOCATE_NEW_PAGES; ++i)
-            {
+            for (long i = tmp; i < tmp + ALLOCATE_NEW_PAGES; ++i) {
                 freeSlots.add(i * conf.pageSize);
             }
         }
@@ -92,7 +87,8 @@ public class MainDataFile {
         long position = getFirstAvailablePageIndex();
         file.seek(position);
         byte[] buffer = new byte[conf.pageSize];
-        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);bbuffer.order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);
+        bbuffer.order(ByteOrder.BIG_ENDIAN);
         bbuffer.putLong(rowID);
         conf.writeKey(bbuffer, key);
         rowID2position.insertPair(new ArrayList<Object>(Arrays.asList(rowID)), position);
@@ -102,8 +98,7 @@ public class MainDataFile {
 
     public void deleteRow(long rowID) throws IOException, MiniDBException {
         long position = rowID2position.search(new ArrayList<Object>(Arrays.asList(rowID))).get(0);
-        if(freeSlots.contains(position))
-        {
+        if (freeSlots.contains(position)) {
             throw new MiniDBException(String.format("The row %d to delete does not exist!", rowID));
         }
         freeSlots.add(position);
@@ -113,14 +108,14 @@ public class MainDataFile {
 
     public ArrayList<Object> readRow(long rowID) throws IOException, MiniDBException {
         long position = rowID2position.search(new ArrayList<Object>(Arrays.asList(rowID))).get(0);
-        if(freeSlots.contains(position))
-        {
+        if (freeSlots.contains(position)) {
             throw new MiniDBException(String.format("The row %d does not exist!", rowID));
         }
         file.seek(position);
         byte[] buffer = new byte[conf.pageSize];
         file.read(buffer);
-        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);bbuffer.order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);
+        bbuffer.order(ByteOrder.BIG_ENDIAN);
         bbuffer.getLong();
         return conf.readKey(bbuffer);
     }
@@ -128,14 +123,15 @@ public class MainDataFile {
     public void updateRow(long rowID, ArrayList<Object> newKey) throws IOException, MiniDBException {
         long position = rowID2position.search(new ArrayList<Object>(Arrays.asList(rowID))).get(0);
         byte[] buffer = new byte[conf.pageSize];
-        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);bbuffer.order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);
+        bbuffer.order(ByteOrder.BIG_ENDIAN);
         bbuffer.putLong(rowID);
         conf.writeKey(bbuffer, newKey);
         file.seek(position);
         file.write(buffer);
     }
 
-    public static class SearchResult{
+    public static class SearchResult {
         public ArrayList<Object> key;
         public long rowID;
 
@@ -153,11 +149,10 @@ public class MainDataFile {
     // linear scan
     public LinkedList<SearchResult> searchRows(Function<SearchResult, Boolean> pred) throws IOException {
         long length = file.length();
-        long[] positions = new long[(int)length / conf.pageSize];
+        long[] positions = new long[(int) length / conf.pageSize];
         int index = 0;
         for (long i = conf.pageSize; i < length; i += conf.pageSize) {
-            if(!freeSlots.contains(i))
-            {
+            if (!freeSlots.contains(i)) {
                 positions[index++] = i;
             }
         }
@@ -167,12 +162,12 @@ public class MainDataFile {
             file.seek(position);
             byte[] buffer = new byte[conf.pageSize];
             file.read(buffer);
-            ByteBuffer bbuffer = ByteBuffer.wrap(buffer);bbuffer.order(ByteOrder.BIG_ENDIAN);
+            ByteBuffer bbuffer = ByteBuffer.wrap(buffer);
+            bbuffer.order(ByteOrder.BIG_ENDIAN);
             SearchResult each = new SearchResult();
             each.rowID = bbuffer.getLong();
             each.key = conf.readKey(bbuffer);
-            if(pred.apply(each))
-            {
+            if (pred.apply(each)) {
                 ans.add(each);
             }
         }
@@ -187,22 +182,19 @@ public class MainDataFile {
         // trim file
         TreeSet<Long> tailFreePages = new TreeSet<>();
         long lastPos = file.length() - conf.pageSize;
-        while (!freeSlots.isEmpty())
-        {
+        while (!freeSlots.isEmpty()) {
             long last = freeSlots.last();
-            if(lastPos == last)
-            {
+            if (lastPos == last) {
                 freeSlots.pollLast();
                 tailFreePages.add(last);
                 lastPos -= conf.pageSize;
-            }else{
+            } else {
                 break;
             }
         }
-        if(tailFreePages.size() < 20)
-        {// waste some pages, ok
+        if (tailFreePages.size() < 20) {// waste some pages, ok
             freeSlots.addAll(tailFreePages);
-        }else {// too many free pages at the last, trim the file
+        } else {// too many free pages at the last, trim the file
             for (int i = 0; i < 20; i++) {
                 freeSlots.add(tailFreePages.pollFirst());
             }
@@ -214,8 +206,7 @@ public class MainDataFile {
         positions[positions.length - 1] = -1L;
 
         int pages = positions.length / conf.nValidPointerInFreePage;
-        if(freeSlots.size() % conf.nValidPointerInFreePage != 0)
-        {
+        if (freeSlots.size() % conf.nValidPointerInFreePage != 0) {
             pages += 1;
         }
         Long[] freePagePositions = new Long[pages];
@@ -228,21 +219,19 @@ public class MainDataFile {
         byte[] buffer = new byte[conf.pageSize];
 
         int ipage = 0, ifree = 1; // the first position is written in the file header
-        while (ipage < pages && ifree < positions.length)
-        {
+        while (ipage < pages && ifree < positions.length) {
             file.seek(freePagePositions[ipage++]);
-            ByteBuffer bbuffer = ByteBuffer.wrap(buffer);bbuffer.order(ByteOrder.BIG_ENDIAN);
-            if(ipage == pages)
-            {// end
+            ByteBuffer bbuffer = ByteBuffer.wrap(buffer);
+            bbuffer.order(ByteOrder.BIG_ENDIAN);
+            if (ipage == pages) {// end
                 bbuffer.putLong(-1L);
-            }else {
+            } else {
                 bbuffer.putLong(freePagePositions[ipage]);
             }
             for (int i = 0; i < conf.nValidPointerInFreePage; i++) {
-                if(ifree >= positions.length)
-                {
+                if (ifree >= positions.length) {
                     bbuffer.putLong(-1L);
-                }else{
+                } else {
                     bbuffer.putLong(positions[ifree++]);
                 }
             }

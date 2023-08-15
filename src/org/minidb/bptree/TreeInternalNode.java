@@ -9,9 +9,7 @@ import java.util.LinkedList;
 
 
 /**
- *
  * Class for our Internal nodes
- *
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 class TreeInternalNode extends TreeNode {
@@ -21,7 +19,7 @@ class TreeInternalNode extends TreeNode {
     /**
      * Create an internal node
      *
-     * @param nodeType the node type parameter
+     * @param nodeType  the node type parameter
      * @param pageIndex the index of the page
      */
     TreeInternalNode(TreeNodeType nodeType, long pageIndex) {
@@ -29,32 +27,41 @@ class TreeInternalNode extends TreeNode {
         pointerArray = new LinkedList<>();
     }
 
-    void removePointerAt(int index)
-        {pointerArray.remove(index);}
+    void removePointerAt(int index) {
+        pointerArray.remove(index);
+    }
 
     long getPointerAt(int index) {
-        return((index < 0 || index >= pointerArray.size()) ? -1 : pointerArray.get(index));}
+        return ((index < 0 || index >= pointerArray.size()) ? -1 : pointerArray.get(index));
+    }
 
-    long popPointer()
-        {return(pointerArray.pop());}
+    long popPointer() {
+        return (pointerArray.pop());
+    }
 
-    long removeLastPointer()
-        {return(pointerArray.removeLast());}
+    long removeLastPointer() {
+        return (pointerArray.removeLast());
+    }
 
-    void addPointerAt(int index, long val)
-        {pointerArray.add(index, val);}
+    void addPointerAt(int index, long val) {
+        pointerArray.add(index, val);
+    }
 
-    void addPointerLast(long val)
-        {pointerArray.addLast(val);}
+    void addPointerLast(long val) {
+        pointerArray.addLast(val);
+    }
 
-    void setPointerAt(int index, long val)
-        {pointerArray.set(index, val);}
+    void setPointerAt(int index, long val) {
+        pointerArray.set(index, val);
+    }
 
-    int getPointerListSize()
-        {return(pointerArray.size());}
+    int getPointerListSize() {
+        return (pointerArray.size());
+    }
 
-    void pushToPointerArray(long val)
-        {pointerArray.push(val);}
+    void pushToPointerArray(long val) {
+        pointerArray.push(val);
+    }
 
 
     /**
@@ -66,8 +73,8 @@ class TreeInternalNode extends TreeNode {
             throws IOException {
 
         // update root index in the file
-        if(this.isRoot()) {
-            r.seek(conf.headerSize-16L);
+        if (this.isRoot()) {
+            r.seek(conf.headerSize - 16L);
             r.writeLong(getPageIndex());
         }
 
@@ -75,7 +82,8 @@ class TreeInternalNode extends TreeNode {
         r.seek(getPageIndex());
 
         byte[] buffer = new byte[conf.pageSize];
-        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);bbuffer.order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);
+        bbuffer.order(ByteOrder.BIG_ENDIAN);
         // write the node type
         bbuffer.putShort(getPageType());
 
@@ -83,7 +91,7 @@ class TreeInternalNode extends TreeNode {
         bbuffer.putInt(getCurrentCapacity());
 
         // now write Key/Pointer pairs
-        for(int i = 0; i < getCurrentCapacity(); i++) {
+        for (int i = 0; i < getCurrentCapacity(); i++) {
             bbuffer.putLong(getPointerAt(i));   // Pointer
             conf.writeKey(bbuffer, getKeyAt(i));
         }

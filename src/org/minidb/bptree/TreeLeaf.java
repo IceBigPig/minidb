@@ -10,7 +10,6 @@ import java.util.LinkedList;
 
 /**
  * Class for our Tree leafs
- *
  */
 @SuppressWarnings("unused")
 class TreeLeaf extends TreeNode {
@@ -24,71 +23,89 @@ class TreeLeaf extends TreeNode {
      *
      * @param nextPagePointer the next leaf pointer
      * @param prevPagePointer the previous leaf pointer
-     * @param nodeType the node type
-     * @param pageIndex the index of the page
+     * @param nodeType        the node type
+     * @param pageIndex       the index of the page
      */
-    TreeLeaf(long nextPagePointer, long prevPagePointer,
-             TreeNodeType nodeType, long pageIndex) {
+    TreeLeaf(long nextPagePointer, long prevPagePointer, TreeNodeType nodeType, long pageIndex) {
         super(nodeType, pageIndex);
-        if(nodeType == TreeNodeType.TREE_ROOT_LEAF && nextPagePointer > 0)
-            {throw new IllegalArgumentException("Can't have leaf " +
-                    "root with non-null next pointer");}
+
+        if (nodeType == TreeNodeType.TREE_ROOT_LEAF && nextPagePointer > 0) {
+            throw new IllegalArgumentException("Can't have leaf root with non-null next pointer");
+        }
         this.nextPagePointer = nextPagePointer;
         this.prevPagePointer = prevPagePointer;
         this.overflowList = new LinkedList<>();
         this.valueList = new LinkedList<>();
     }
 
-    void addToOverflowList(int index, long value)
-        {overflowList.add(index, value);}
 
-    void addLastToOverflowList(long value)
-        {overflowList.addLast(value);}
+    void addToOverflowList(int index, long value) {
+        overflowList.add(index, value);
+    }
 
-    void addLastToValueList(long value)
-        {valueList.addLast(value);}
+    void addLastToOverflowList(long value) {
+        overflowList.addLast(value);
+    }
 
-    long getOverflowPointerAt(int index)
-        {return overflowList.get(index);}
+    void addLastToValueList(long value) {
+        valueList.addLast(value);
+    }
 
-    void pushToOverflowList(long overflowPointer)
-        {overflowList.push(overflowPointer);}
+    long getOverflowPointerAt(int index) {
+        return overflowList.get(index);
+    }
 
-    long popOverflowPointer()
-        {return(overflowList.pop());}
+    void pushToOverflowList(long overflowPointer) {
+        overflowList.push(overflowPointer);
+    }
 
-    void setOverflowPointerAt(int index, long value)
-        {overflowList.set(index, value);}
+    long popOverflowPointer() {
+        return (overflowList.pop());
+    }
 
-    long removeLastOverflowPointer()
-        {return(overflowList.removeLast());}
+    void setOverflowPointerAt(int index, long value) {
+        overflowList.set(index, value);
+    }
 
-    long getLastOverflowPointer()
-        {return(overflowList.getLast());}
+    long removeLastOverflowPointer() {
+        return (overflowList.removeLast());
+    }
 
-    void addToValueList(int index, long value)
-        {valueList.add(index, value);}
+    long getLastOverflowPointer() {
+        return (overflowList.getLast());
+    }
 
-    long getValueAt(int index)
-        {return valueList.get(index);}
+    void addToValueList(int index, long value) {
+        valueList.add(index, value);
+    }
 
-    void pushToValueList(long value)
-        {valueList.push(value);}
+    long getValueAt(int index) {
+        return valueList.get(index);
+    }
 
-    long popValue()
-        {return valueList.pop();}
+    void pushToValueList(long value) {
+        valueList.push(value);
+    }
 
-    long removeLastValue()
-        {return  valueList.removeLast();}
+    long popValue() {
+        return valueList.pop();
+    }
 
-    long getNextPagePointer()
-        {return(nextPagePointer);}
+    long removeLastValue() {
+        return valueList.removeLast();
+    }
 
-    void setNextPagePointer(long next)
-        {nextPagePointer = next;}
+    long getNextPagePointer() {
+        return (nextPagePointer);
+    }
 
-    long getPrevPagePointer()
-        {return prevPagePointer;}
+    void setNextPagePointer(long next) {
+        nextPagePointer = next;
+    }
+
+    long getPrevPagePointer() {
+        return prevPagePointer;
+    }
 
     void setPrevPagePointer(long prevPagePointer) {
         this.prevPagePointer = prevPagePointer;
@@ -100,11 +117,11 @@ class TreeLeaf extends TreeNode {
         overflowList.remove(index);
         long s = valueList.remove(index);
         decrementCapacity(conf);
-        return(s);
+        return (s);
     }
 
     /**
-     * @param r pointer to *opened* B+ tree file
+     * @param r    pointer to *opened* B+ tree file
      * @param conf configuration parameter
      * @throws IOException is thrown when an I/O operation fails
      */
@@ -113,8 +130,8 @@ class TreeLeaf extends TreeNode {
             throws IOException {
 
         // update root index in the file
-        if(this.isRoot()) {
-            r.seek(conf.headerSize-16L);
+        if (this.isRoot()) {
+            r.seek(conf.headerSize - 16L);
             r.writeLong(getPageIndex());
         }
 
@@ -122,7 +139,8 @@ class TreeLeaf extends TreeNode {
         r.seek(getPageIndex());
 
         byte[] buffer = new byte[conf.pageSize];
-        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);bbuffer.order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);
+        bbuffer.order(ByteOrder.BIG_ENDIAN);
 
         // now write the node type
         bbuffer.putShort(getPageType());
@@ -137,7 +155,7 @@ class TreeLeaf extends TreeNode {
         bbuffer.putInt(getCurrentCapacity());
 
         // now write the Key/Value pairs
-        for(int i = 0; i < getCurrentCapacity(); i++) {
+        for (int i = 0; i < getCurrentCapacity(); i++) {
             conf.writeKey(bbuffer, getKeyAt(i));
             bbuffer.putLong(valueList.get(i));
             bbuffer.putLong(getOverflowPointerAt(i));

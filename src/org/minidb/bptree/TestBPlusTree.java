@@ -13,40 +13,34 @@ import java.util.LinkedList;
 
 public class TestBPlusTree {
 
-    private static BPlusTree commonTree(boolean unique, boolean create) throws Exception, IOException, MiniDBException
-    {
+    private static BPlusTree commonTree(boolean unique, boolean create) throws Exception, IOException, MiniDBException {
         boolean recreateTree = create;
         ArrayList<Type> types = new ArrayList<>(Arrays.asList(Integer.class, Double.class, String.class));
         ArrayList<Integer> sizes = new ArrayList<>(Arrays.asList(4, 8, 10));
         ArrayList<Integer> colIDs = new ArrayList<>(Arrays.asList(0, 1, 2));
-        BPlusConfiguration btconf = new BPlusConfiguration(256, 8, types, sizes, colIDs, unique,1000);
+        BPlusConfiguration btconf = new BPlusConfiguration(256, 8, types, sizes, colIDs, unique, 1000);
         BPlusTree bt = new BPlusTree(btconf, recreateTree ? "rw+" : "rw", "file.data");
         return bt;
     }
 
-    private static BPlusTree createCommonTree(boolean unique) throws Exception, IOException, MiniDBException
-    {
+    private static BPlusTree createCommonTree(boolean unique) throws Exception, IOException, MiniDBException {
         return commonTree(unique, true);
     }
 
-    private static BPlusTree resumeCommonTree(boolean unique) throws Exception, IOException, MiniDBException
-    {
+    private static BPlusTree resumeCommonTree(boolean unique) throws Exception, IOException, MiniDBException {
         return commonTree(unique, false);
     }
 
-    private static void assertSearchEqual(BPlusTree bt, ArrayList<Object> key, Long[] expected) throws Exception
-    {
+    private static void assertSearchEqual(BPlusTree bt, ArrayList<Object> key, Long[] expected) throws Exception {
         LinkedList<Long> values = bt.search(key);
         HashSet<Long> findValues = new HashSet<Long>(values);
         HashSet<Long> expectedValues = new HashSet<>(Arrays.asList(expected));
-        if(!expectedValues.equals(findValues))
-        {
+        if (!expectedValues.equals(findValues)) {
             throw new Exception("wrong!");
         }
     }
 
-    private static void assertSetEqual(LinkedList<Long> values, Long[] expected)
-    {
+    private static void assertSetEqual(LinkedList<Long> values, Long[] expected) {
         HashSet<Long> findValues = new HashSet<Long>(values);
         HashSet<Long> expectedValues = new HashSet<>(Arrays.asList(expected));
         Assert.assertTrue(findValues.equals(expectedValues));
@@ -54,7 +48,7 @@ public class TestBPlusTree {
 
     @Test
     public void testDuplicateInsert()
-            throws Exception, IOException, MiniDBException{
+            throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(false);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "12")), 12L);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "120")), 0L);
@@ -62,11 +56,10 @@ public class TestBPlusTree {
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "12 ")), 13L);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "12 ")), 15L);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "9")), 255L);
-        try{
+        try {
             bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, new String(new char[120]))), 255L);
             throw new Exception("wrong!");
-        }catch (MiniDBException e)
-        {
+        } catch (MiniDBException e) {
         }
         assertSearchEqual(bt, new ArrayList<>(Arrays.asList(100, 200.0, "9")), new Long[]{255L, 254L});
         assertSearchEqual(bt, new ArrayList<>(Arrays.asList(100, 200.0, "120")), new Long[]{0L});
@@ -77,16 +70,15 @@ public class TestBPlusTree {
 
     @Test
     public void testUniqueInsert()
-            throws Exception, IOException, MiniDBException{
+            throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(true);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "12")), 12L);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "120")), 0L);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "9")), 254L);
-        try{
+        try {
             bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "12 ")), 13L);
             throw new Exception("wrong!");
-        }catch (MiniDBException e)
-        {
+        } catch (MiniDBException e) {
         }
         assertSearchEqual(bt, new ArrayList<>(Arrays.asList(100, 200.0, "9")), new Long[]{254L});
         assertSearchEqual(bt, new ArrayList<>(Arrays.asList(100, 200.0, "120")), new Long[]{0L});
@@ -97,7 +89,7 @@ public class TestBPlusTree {
 
     @Test
     public void testDuplicateDelete()
-            throws Exception, IOException, MiniDBException{
+            throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(false);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "12")), 12L);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "120")), 0L);
@@ -120,7 +112,7 @@ public class TestBPlusTree {
 
     @Test
     public void testUniqueDelete()
-            throws Exception, IOException, MiniDBException{
+            throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(true);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "12")), 12L);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "120")), 0L);
@@ -140,7 +132,7 @@ public class TestBPlusTree {
 
     @Test
     public void testDuplicateUpdate()
-            throws Exception, IOException, MiniDBException{
+            throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(false);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "12")), 12L);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "120")), 0L);
@@ -164,7 +156,7 @@ public class TestBPlusTree {
 
     @Test
     public void testUniqueUpdate()
-            throws Exception, IOException, MiniDBException{
+            throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(true);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "12")), 12L);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "120")), 0L);
@@ -185,7 +177,7 @@ public class TestBPlusTree {
 
     @Test
     public void testDuplicateRangeSearch()
-            throws Exception, IOException, MiniDBException{
+            throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(false);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "12")), 12L);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "120")), 0L);
@@ -215,18 +207,18 @@ public class TestBPlusTree {
                 bt.rangeSearch(new ArrayList<>(Arrays.asList(100, 200.0, "13")), new ArrayList<>(Arrays.asList(100, 200.0, "12")), true, true),
                 new Long[]{});
         // test case for a < b
-            // find all
+        // find all
         assertSetEqual(
                 bt.rangeSearch(new ArrayList<>(Arrays.asList(100, 200.0, "0")), new ArrayList<>(Arrays.asList(100, 200.0, "999")), true, true),
                 new Long[]{0L, 12L, 13L, 15L, 254L, 255L});
-            // find one
+        // find one
         assertSetEqual(
                 bt.rangeSearch(new ArrayList<>(Arrays.asList(100, 200.0, "8")), new ArrayList<>(Arrays.asList(100, 200.0, "92")), true, true),
                 new Long[]{254L, 255L});
         assertSetEqual(
                 bt.rangeSearch(new ArrayList<>(Arrays.asList(100, 200.0, "8")), new ArrayList<>(Arrays.asList(100, 200.0, "9")), false, true),
                 new Long[]{254L, 255L});
-            // find none
+        // find none
         assertSetEqual(
                 bt.rangeSearch(new ArrayList<>(Arrays.asList(100, 200.0, "55")), new ArrayList<>(Arrays.asList(100, 200.0, "66")), true, true),
                 new Long[]{});
@@ -235,7 +227,7 @@ public class TestBPlusTree {
 
     @Test
     public void testUniqueRangeSearch()
-            throws Exception, IOException, MiniDBException{
+            throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(true);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "12")), 12L);
         bt.insertPair(new ArrayList<>(Arrays.asList(100, 200.0, "120")), 0L);
@@ -281,16 +273,14 @@ public class TestBPlusTree {
     }
 
     @Test
-    public void testMassiveUniqueInsert()throws Exception, IOException, MiniDBException{
+    public void testMassiveUniqueInsert() throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(true);
-        for(int i = 0; i < 1000; ++ i)
-        {
+        for (int i = 0; i < 1000; ++i) {
             bt.insertPair(new ArrayList<>(Arrays.asList(i, 200.0, "12")), i);
         }
         int start = 20, end = 50;
         Long[] ans = new Long[end - start];
-        for (int i = start; i < end; ++i)
-        {
+        for (int i = start; i < end; ++i) {
             ans[i - start] = new Long(i);
         }
         assertSetEqual(
@@ -299,17 +289,15 @@ public class TestBPlusTree {
     }
 
     @Test
-    public void testMassiveDuplicateInsert()throws Exception, IOException, MiniDBException{
+    public void testMassiveDuplicateInsert() throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(false);
-        for(int i = 0; i < 1000; ++ i)
-        {
+        for (int i = 0; i < 1000; ++i) {
             bt.insertPair(new ArrayList<>(Arrays.asList(i, 200.0, "12")), i);
-            bt.insertPair(new ArrayList<>(Arrays.asList(i, 200.0, "12")), i+1);
+            bt.insertPair(new ArrayList<>(Arrays.asList(i, 200.0, "12")), i + 1);
         }
         int start = 20, end = 50;
         Long[] ans = new Long[(end - start) * 2];
-        for (int i = start; i < end; ++i)
-        {
+        for (int i = start; i < end; ++i) {
             ans[(i - start) * 2] = new Long(i);
             ans[(i - start) * 2 + 1] = new Long(i + 1);
         }
@@ -319,16 +307,14 @@ public class TestBPlusTree {
     }
 
     @Test
-    public void testExtremeDuplicateInsert()throws Exception, IOException, MiniDBException{
+    public void testExtremeDuplicateInsert() throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(false);
-        for(int i = 0; i < 100; ++ i)
-        {
+        for (int i = 0; i < 100; ++i) {
             bt.insertPair(new ArrayList<>(Arrays.asList(0, 200.0, "12")), i);
         }
         int start = 0, end = 100;
         Long[] ans = new Long[(end - start)];
-        for (int i = start; i < end; ++i)
-        {
+        for (int i = start; i < end; ++i) {
             ans[i] = new Long(i);
         }
         assertSetEqual(
@@ -337,19 +323,17 @@ public class TestBPlusTree {
     }
 
     @Test
-    public void testMassiveDuplicateResume()throws Exception, IOException, MiniDBException{
+    public void testMassiveDuplicateResume() throws Exception, IOException, MiniDBException {
         BPlusTree bt = createCommonTree(false);
-        for(int i = 0; i < 1000; ++ i)
-        {
+        for (int i = 0; i < 1000; ++i) {
             bt.insertPair(new ArrayList<>(Arrays.asList(i, 200.0, "12")), i);
-            bt.insertPair(new ArrayList<>(Arrays.asList(i, 200.0, "12")), i+1);
+            bt.insertPair(new ArrayList<>(Arrays.asList(i, 200.0, "12")), i + 1);
         }
         bt.commitTree();
         bt = resumeCommonTree(false);
         int start = 20, end = 50;
         Long[] ans = new Long[(end - start) * 2];
-        for (int i = start; i < end; ++i)
-        {
+        for (int i = start; i < end; ++i) {
             ans[(i - start) * 2] = new Long(i);
             ans[(i - start) * 2 + 1] = new Long(i + 1);
         }

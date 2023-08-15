@@ -21,7 +21,7 @@ class TreeOverflow extends TreeNode {
      *
      * @param nextPagePointer the next overflow pointer
      * @param prevPagePointer the previous leaf or overflow pointer
-     * @param pageIndex the page index in the file
+     * @param pageIndex       the page index in the file
      */
     TreeOverflow(long nextPagePointer, long prevPagePointer,
                  long pageIndex) {
@@ -31,26 +31,33 @@ class TreeOverflow extends TreeNode {
         this.prevPagePointer = prevPagePointer;
     }
 
-    void pushToValueList(long value)
-        {valueList.push(value);}
+    void pushToValueList(long value) {
+        valueList.push(value);
+    }
 
-    void addToValueList(int index, long value)
-        {valueList.add(index, value);}
+    void addToValueList(int index, long value) {
+        valueList.add(index, value);
+    }
 
-    long getValueAt(int index)
-        {return valueList.get(index);}
+    long getValueAt(int index) {
+        return valueList.get(index);
+    }
 
-    long getNextPagePointer()
-        {return(nextPagePointer);}
+    long getNextPagePointer() {
+        return (nextPagePointer);
+    }
 
-    void setNextPagePointer(long next)
-        {nextPagePointer = next;}
+    void setNextPagePointer(long next) {
+        nextPagePointer = next;
+    }
 
-    private long getPrevPagePointer()
-        {return prevPagePointer;}
+    private long getPrevPagePointer() {
+        return prevPagePointer;
+    }
 
-    void setPrevPagePointer(long prevPagePointer)
-        {this.prevPagePointer = prevPagePointer;}
+    void setPrevPagePointer(long prevPagePointer) {
+        this.prevPagePointer = prevPagePointer;
+    }
 
 
     /**
@@ -64,7 +71,8 @@ class TreeOverflow extends TreeNode {
         r.seek(getPageIndex());
 
         byte[] buffer = new byte[conf.pageSize];
-        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);bbuffer.order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer bbuffer = ByteBuffer.wrap(buffer);
+        bbuffer.order(ByteOrder.BIG_ENDIAN);
         // now write the node type
         bbuffer.putShort(getPageType());
 
@@ -80,8 +88,9 @@ class TreeOverflow extends TreeNode {
         conf.writeKey(bbuffer, getKeyAt(0));
 
         // now write the values
-        for(int i = 0; i < getCurrentCapacity(); i++)
-            {bbuffer.putLong(valueList.get(i));}
+        for (int i = 0; i < getCurrentCapacity(); i++) {
+            bbuffer.putLong(valueList.get(i));
+        }
         r.write(buffer);
     }
 }
